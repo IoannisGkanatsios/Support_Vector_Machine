@@ -29,7 +29,9 @@ optional arguments:
                         Specify an output directory                        
   -i INPUTRAW, --inputraw INPUTRAW  
                         Provide a path to the raw data
-  --train TRAIN         Provide a path to the training data  
+  --train TRAIN         Provide a path to the training data. A different shapefile for each landcover class 
+                        for instance, for the following 3 classes: urban, river and crops, we should have 3 
+                        shapefiles: urban.shp, river.shp and crops.shp  
   --tune                tune the model to choose the optimum hyperparameters 
   --tunetype TUNETYPE   select a method for tuning the SVM model. THe two optios are grid or random grid method exhoustively 
                         search all the values that have  been defined and trains the model for every possible combination. 
