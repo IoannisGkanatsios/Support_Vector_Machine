@@ -95,10 +95,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '-o',
-        '--output',
+        '--out_image',
         required=False,
-        help='Specify an output directory'
+        help='It outputs the change detection map. It shows the infrastructure loss and gain \
+         values of -1 shows the loss and values of 1 show the gain'
     )
 
     parser.add_argument(
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         parser.error(
             'Please provide two images acquired at different times (before and after)')
 
-    elif (args.before and args.after) and not args.output:
+    elif (args.before and args.after) and not args.out_image:
 
         # load before and after images
         raster_1, crs1, transform1, profile1 = read(args.before)
@@ -153,4 +153,4 @@ if __name__ == "__main__":
         pixel_size = transform1[0]
         img_difference = difference(raster_1, raster_2)
         loss = loss_estimation(img_difference, pixel_size)
-        write_raster(img_difference, crs1, transform1, args.output)
+        write_raster(img_difference, crs1, transform1, args.out_image)
