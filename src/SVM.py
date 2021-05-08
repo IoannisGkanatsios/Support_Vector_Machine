@@ -318,7 +318,9 @@ if __name__ == "__main__":
         '--train',
         type=str,
         required=False,
-        help='Provide a path to the training data'
+        help='Provide a path to the training data. A different shapefile for each landcover class \
+            for instance, for the following 3 classes: urban, river and crops, we should have 3 \
+            shapefiles: urban.shp, river.shp and crops.shp'
     )
 
     parser.add_argument(
