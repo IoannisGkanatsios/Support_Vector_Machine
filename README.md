@@ -57,14 +57,6 @@ optional arguments:
 
 ```
 
-# Results
-**c)** chnaged between 2017 and 2018  and **d)** changed between 2018 and 2019
-![loss](https://user-images.githubusercontent.com/25709946/117554974-0e158e80-b053-11eb-86ce-9633db063d43.png)
-
-c) Classification map in 2017  d) Classification map in 2018
-![classification](https://user-images.githubusercontent.com/25709946/117555090-0f938680-b054-11eb-9fc3-aff3d32174ac.png)
-
-
 # Licence
                      
 MIT
