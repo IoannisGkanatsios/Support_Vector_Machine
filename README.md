@@ -57,6 +57,8 @@ optional arguments:
 
 ```
 
+![loss](/home/ioannisgkanatsios/Documents/Support_Vector_Machine/pics/loss.png)
+
 # Licence
                      
 MIT
