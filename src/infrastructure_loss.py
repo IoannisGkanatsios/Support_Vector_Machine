@@ -85,9 +85,9 @@ def loss_estimation(raster, pixel_size):
     no_change = np.count_nonzero(raster == 0)
     no_change = ((pixel_size * pixel_size) * no_change) / 1000
 
-    print(f"Infrastructure loss: {total_loss}")
-    print(f"Infrastructure gain: {total_gain}")
-    print(f"Unchanged: {no_change}")
+    print(f"Infrastructure loss (Km^2): {total_loss}")
+    print(f"Infrastructure gain (Km^2): {total_gain}")
+    print(f"Unchanged (Km^2): {no_change}")
 
 
 if __name__ == "__main__":
