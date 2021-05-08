@@ -5,6 +5,8 @@ This repository contains all the algorithms used to produce the results in the p
 
 # Run the code
 
+**Create virtual environment**
+
 ```
 $ mkdir svm
 $ cd svm
@@ -12,6 +14,7 @@ $ pipenv --python 3
 $ pipenv install -r path/to/requirements.txt
 ```
 
+**How to use the code**
 ```
 usage: SVM.py [-h] 
               [-o OUTDIR] 
@@ -32,8 +35,7 @@ optional arguments:
                         search all the values that have  been defined and trains the model for every possible combination. 
                         Random method uses a sample of the values provided which makes the optimization process much faster
 
-
-
+```
 
 
 # Licence
