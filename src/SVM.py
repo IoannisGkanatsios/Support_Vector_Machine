@@ -331,7 +331,7 @@ if __name__ == "__main__":
         '--tunetype',
         type=str,
         required=False,
-        help='tune the model to choose the optimum hyperparameters. THe two optios are grid or random \
+        help='select a method for tuning the SVM model. The two optios are grid or random \
             grid method exhoustively search all the values that have been defined and trains the model \
             for every possible combination. Random method uses a smaple of the values provided which \
             makes the optimization process much faster'
