@@ -4,10 +4,15 @@ This repository contains all the algorithms used to produce the results in the p
 
 
 usage: SVM.py [-h] 
+
               [-o OUTDIR] 
+              
               [-i INPUTRAW] 
+              
               [--train TRAIN] 
+              
               [--tune] 
+              
               [--tunetype TUNETYPE]
 
 optional arguments:
