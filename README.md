@@ -14,7 +14,7 @@ $ pipenv --python 3
 $ pipenv install -r path/to/requirements.txt
 ```
 
-**How to use the code**
+**SVM classification**
 ```
 usage: SVM.py [-h] 
               [-o OUTDIR] 
@@ -37,6 +37,23 @@ optional arguments:
 
 ```
 
+# Change detection
+```
+usage: infrastructure_loss.py [-h] 
+                              [--out_image OUT_IMAGE] 
+                              [--before BEFORE] 
+                              [--after AFTER]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --out_image OUT_IMAGE
+                        It outputs the change detection map. It shows the infrastructure loss and gain values of -1 shows 
+                        the loss and values of 1 show the gain
+  --before BEFORE       Provide a path to the data before the event. This is the reference image
+  --after AFTER         Provide a path to the data after the event. This is the second image that is used to 
+                        estimate the change in comparison with the first one
+
+```
 
 # Licence
                      
