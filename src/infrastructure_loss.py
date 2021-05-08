@@ -98,21 +98,22 @@ if __name__ == "__main__":
         '--out_image',
         required=False,
         help='It outputs the change detection map. It shows the infrastructure loss and gain \
-         values of -1 shows the loss and values of 1 show the gain'
+            values of -1 shows the loss and values of 1 show the gain'
     )
 
     parser.add_argument(
         '--before',
         type=str,
         required=False,
-        help='Provide a path to the raw data'
+        help='Provide a path to the data before the event. This is the reference image'
     )
 
     parser.add_argument(
         '--after',
         type=str,
         required=False,
-        help='Provide a path to the raw data'
+        help='Provide a path to the data after the event. This is the second image \
+            that is used to estimate the change in comparison with the first one'
     )
 
     args = parser.parse_args()
