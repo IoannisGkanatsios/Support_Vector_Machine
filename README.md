@@ -60,7 +60,7 @@ optional arguments:
 # Results
 ![classified_2019](https://user-images.githubusercontent.com/25709946/117588190-d1609a80-b119-11eb-896c-3f0467ce24f6.png)
 
-Building change detection beteen 2015 and 2019
+**Building change detection beteen 2015 and 2019**
 
 ![difference](https://user-images.githubusercontent.com/25709946/117588194-d887a880-b119-11eb-9142-0dd9f77a173a.png)
 
