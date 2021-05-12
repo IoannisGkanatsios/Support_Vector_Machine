@@ -36,7 +36,8 @@ optional arguments:
   --tunetype TUNETYPE   select a method for tuning the SVM model. THe two optios are grid or random grid method exhoustively 
                         search all the values that have  been defined and trains the model for every possible combination. 
                         Random method uses a sample of the values provided which makes the optimization process much faster
-
+  --cpu CPU             select the number of CPUs to be used during processing. if --cpu all passed as an argument then the computer uses all the CPU cores for   
+                        processing. If --cpu int passed as an argument then the computer uses the number of cores specifed by the user
 ```
 
 # Change detection
