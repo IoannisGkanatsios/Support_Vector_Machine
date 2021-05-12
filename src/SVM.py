@@ -25,6 +25,20 @@ from sklearn import preprocessing
 from sklearn.pipeline import Pipeline
 
 
+def int_or_str(value):
+    """
+    parameters
+    ----------
+    value: [str, int]
+        This funtion is used in the parameter 'type' of argparse module.
+        This allows us to use either str or int as an argument
+    """
+    try:
+        return int(value)
+    except:
+        return value
+
+
 def load_raster(input_file):
     """Returns a raster array which consists of its bands and transformation matrix
     parameters
@@ -225,7 +239,7 @@ def predict(raster_img):
     return y_predict
 
 
-def image_classification(raster, raster_img):
+def image_classification(raster, raster_img, cpu_num=None, count=None):
     """It performs SVM classification using parallel processing
     parameters
     ----------
@@ -233,27 +247,55 @@ def image_classification(raster, raster_img):
         crs from the raster dict
     raster_img: ndarray
         ndarray from the raster dict to be used for the classification
+    cpu_num: str
+        if cpu_num=='all' then the computer uses all the CPUs for data processing
+        if cpu_num=='number' then a user can specify the number of CPUs
+        if cpu_num='none' then the coputer uses only one CPU
+    count: int
+        The number of CPUs to be used during processing
 
     """
-
-    # split good data into chunks for parallel processing
-    cpu_n = cpu_count()
     # Reshape the data so that we make predictions for the whole raster
     new_shape = (raster_img.shape[0] *
                  raster_img.shape[1], raster_img.shape[2])
 
     img_as_array = raster_img[:, :].reshape(new_shape)
     image_array = np.copy(img_as_array)
-    split_img = np.array_split(image_array, cpu_n)
 
-    # run parallel processing of all data with SVM
-    pool = Pool(cpu_n)
-    svmLablesPredict = pool.map(predict, split_img)
+    if cpu_num == 'all':
+        # split good data into chunks for parallel processing
+        cpu_n = cpu_count()
 
-    # join results back from the queue and insert into full matrix
-    svmLablesPredict = np.hstack(svmLablesPredict)
-    svm_classified = svmLablesPredict.reshape(
-        raster_img.shape[0], raster_img.shape[1])
+        split_img = np.array_split(image_array, cpu_n)
+
+        # run parallel processing of all data with SVM
+        pool = Pool(cpu_n)
+        svmLablesPredict = pool.map(predict, split_img)
+
+        # join results back from the queue and insert into full matrix
+        svmLablesPredict = np.hstack(svmLablesPredict)
+        svm_classified = svmLablesPredict.reshape(
+            raster_img.shape[0], raster_img.shape[1])
+
+    elif cpu_num == 'number':
+        # split good data into chunks for parallel processing
+        cpu_n = count
+
+        split_img = np.array_split(image_array, cpu_n)
+
+        # run parallel processing of all data with SVM
+        pool = Pool(cpu_n)
+        svmLablesPredict = pool.map(predict, split_img)
+
+        # join results back from the queue and insert into full matrix
+        svmLablesPredict = np.hstack(svmLablesPredict)
+        svm_classified = svmLablesPredict.reshape(
+            raster_img.shape[0], raster_img.shape[1])
+
+    elif cpu_num == 'none':
+        svmLablesPredict = clf.predict(image_array)
+        svm_classified = svmLablesPredict.reshape(
+            raster_img.shape[0], raster_img.shape[1])
 
     return svm_classified
 
@@ -339,6 +381,13 @@ if __name__ == "__main__":
             makes the optimization process much faster'
     )
 
+    parser.add_argument(
+        '--cpu',
+        type=int_or_str,
+        required=False,
+        help='select the number of CPUs'
+    )
+
     args = parser.parse_args()
 
     if not args.outdir:
@@ -370,7 +419,7 @@ if __name__ == "__main__":
             'Please specify the type of tunning. options: grid or random (use the flag --tunetype)')
 
     elif args.tune and args.tunetype == 'random':
-        print('Model tunning absed on random method. This process is very computationally expensive')
+        print('Model tunning based on random method. This process is very computationally expensive')
         clf = svm_params(X_train, y_train, tune=True, search_type='random')
 
     elif args.tune and args.tunetype == 'grid':
@@ -380,8 +429,17 @@ if __name__ == "__main__":
     elif not args.tune:
         clf = svm_params(X_train, y_train)
 
-    svm_classified = image_classification(
-        raster, raster['raster_img'])
+    if args.cpu == 'all':
+        svm_classified = image_classification(
+            raster, raster['raster_img'], cpu_num='all')
+
+    elif args.cpu:
+        svm_classified = image_classification(
+            raster, raster['raster_img'], cpu_num='number', count=args.cpu)
+
+    elif not args.cpu:
+        svm_classified = image_classification(
+            raster, raster['raster_img'], cpu_num='none')
 
     model_accuracy(raster, svm_classified, training_data)
 
