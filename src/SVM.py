@@ -385,7 +385,9 @@ if __name__ == "__main__":
         '--cpu',
         type=int_or_str,
         required=False,
-        help='select the number of CPUs'
+        help='select the number of CPUs to be used during processing. if --cpu all passed as an argument \
+            then the computer uses all the CPU cores for processing. If --cpu int passed as an argument \
+            then the computer uses the number of cores specifed by the user'
     )
 
     args = parser.parse_args()
