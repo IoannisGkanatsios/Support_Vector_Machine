@@ -24,6 +24,8 @@ from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearch
 from sklearn import preprocessing
 from sklearn.pipeline import Pipeline
 
+from PCA import PCA_calculation
+
 
 def int_or_str(value):
     """
@@ -50,21 +52,14 @@ def load_raster(input_file):
     reproject: if true, reprojects the data into WGS 84
     """
     with rasterio.open(input_file) as src:
-        band = src.read()
+        raster_raw = src.read()
         transform = src.transform
         crs = src.crs
         shape = src.shape
         profile = src.profile
-        raster_img = np.rollaxis(band, 0, 3)
+        raster = np.rollaxis(raster_raw, 0, 3)
 
-        return {
-            'band': band,
-            'raster_img': raster_img,
-            'transform': transform,
-            'crs': crs,
-            'shape': shape,
-            'profile': profile
-        }
+        return raster, raster_raw,  profile
 
 
 def write_raster(raster, crs, transform, output_file):
@@ -94,21 +89,7 @@ def write_raster(raster, crs, transform, output_file):
         out.write_band(1, raster)
 
 
-def NDVI(nir, red, threshold):
-    """Calculates NDVI index
-
-    parameters
-    ----------
-    nir: NIR band as input
-    red: RED band as input
-    """
-    NDVI = (nir.astype('float') - red.astype('float')) / \
-        (nir.astype('float') + red.astype('float'))
-    NDVI = np.where(NDVI >= threshold, np.nan, 1)
-    return NDVI
-
-
-def rasterize(raster, vector):
+def rasterize(raster, vector, profile):
     """Use of vector data to train the SVM model.
 
     parameters
@@ -118,16 +99,16 @@ def rasterize(raster, vector):
     vector: shapefile
         number of shapefiles which each one of them corresponds to a landcover class
     """
-    proj = raster['crs']
-    labeled_pixels = np.zeros((raster['shape'][0], raster['shape'][1]))
+    proj = profile['crs']
+    labeled_pixels = np.zeros((raster.shape[0], raster.shape[1]))
     for i, shp in enumerate(sorted(vector, reverse=True)):
         label = i + 1
         df = gpd.read_file(shp)
         df = df.to_crs(crs=proj)
         geom = df['geometry']
         vectors_rasterized = features.rasterize(geom,
-                                                out_shape=raster['shape'],
-                                                transform=raster['transform'],
+                                                out_shape=raster.shape[0:2],
+                                                transform=profile['transform'],
                                                 all_touched=True,
                                                 fill=0,
                                                 default_value=label)
@@ -234,12 +215,11 @@ def predict(raster_img):
     raster_img: ndarray
         raster (raw data) to be used for the classification (numpy array)
     """
-    # clf = svm_params(X_train, y_train)
     y_predict = clf.predict(raster_img)
     return y_predict
 
 
-def image_classification(raster, raster_img, cpu_num=None, count=None):
+def image_classification(raster_img, cpu_num=None, count=None):
     """It performs SVM classification using parallel processing
     parameters
     ----------
@@ -247,12 +227,6 @@ def image_classification(raster, raster_img, cpu_num=None, count=None):
         crs from the raster dict
     raster_img: ndarray
         ndarray from the raster dict to be used for the classification
-    cpu_num: str
-        if cpu_num=='all' then the computer uses all the CPUs for data processing
-        if cpu_num=='number' then a user can specify the number of CPUs
-        if cpu_num='none' then the coputer uses only one CPU
-    count: int
-        The number of CPUs to be used during processing
 
     """
     # Reshape the data so that we make predictions for the whole raster
@@ -300,7 +274,7 @@ def image_classification(raster, raster_img, cpu_num=None, count=None):
     return svm_classified
 
 
-def model_accuracy(raster, svm_classified, shp):
+def model_accuracy(raster, profile, svm_classified, shp):
     """It produces a classification report and confusion matrix of the classified raster
 
     parameters
@@ -312,7 +286,7 @@ def model_accuracy(raster, svm_classified, shp):
     shp: vector
         Location of shapefiles
     """
-    labeled_pixels = rasterize(raster, shp)
+    labeled_pixels = rasterize(raster, shp, profile)
     target_names = [s.stem for s in shp]
 
     for_verification = np.nonzero(labeled_pixels)
@@ -368,14 +342,15 @@ if __name__ == "__main__":
     parser.add_argument(
         '--tune',
         action='store_true',
-        help='tune the model to choose the optimum hyperparameters'
+        help='Tune the SVM model so that it chooses the optimum hyperparameters (use the flag --tunetype) \
+            to choose the method of tuning.'
     )
 
     parser.add_argument(
         '--tunetype',
         type=str,
         required=False,
-        help='select a method for tuning the SVM model. The two optios are grid or random \
+        help='Select a method for tuning the SVM model. The two optios are grid or random \
             grid method exhoustively search all the values that have been defined and trains the model \
             for every possible combination. Random method uses a smaple of the values provided which \
             makes the optimization process much faster'
@@ -385,9 +360,16 @@ if __name__ == "__main__":
         '--cpu',
         type=int_or_str,
         required=False,
-        help='select the number of CPUs to be used during processing. if --cpu all passed as an argument \
-            then the computer uses all the CPU cores for processing. If --cpu int passed as an argument \
-            then the computer uses the number of cores specifed by the user'
+        help='Select the number of CPUs to be used during processing. if --cpu all passed as an argument \
+            then the computer uses all the CPU cores. If --cpu <int number> passed as an argument \
+            then the computer uses the number of cores specifed by the user, else only one core is used'
+    )
+
+    parser.add_argument(
+        '--pca',
+        action='store_true',
+        required=False,
+        help='Performs dimensionality reduction based on the PCA algorithm'
     )
 
     args = parser.parse_args()
@@ -403,18 +385,37 @@ if __name__ == "__main__":
         parser.error(
             'Please provide a path to the training data (use the flag --train)')
 
-    else:
+    if not args.pca:
         raster_name = Path(args.inputraw).stem
         print(
             f"The sattelite scene: {raster_name} is being processed", '\n')
 
-        raster = load_raster(args.inputraw)
+        raster, raster_raw, profile = load_raster(args.inputraw)
         training_data = [train for train in Path(args.train).glob('*.shp')]
+
         rasterized = rasterize(raster=raster,
-                               vector=training_data)
+                               vector=training_data,
+                               profile=profile)
 
         X_train, X_test, y_train, y_test = split(
-            raster['raster_img'], rasterized, training_data)
+            raster, rasterized, training_data)
+
+    elif args.pca:
+        raster_name = Path(args.inputraw).stem
+        print(
+            f"The sattelite scene: {raster_name} is being processed", '\n')
+
+        raster, raster_raw, profile = load_raster(args.inputraw)
+        training_data = [train for train in Path(args.train).glob('*.shp')]
+
+        raster = PCA_calculation(raster_raw)
+
+        rasterized = rasterize(raster=raster,
+                               vector=training_data,
+                               profile=profile)
+
+        X_train, X_test, y_train, y_test = split(
+            raster, rasterized, training_data)
 
     if args.tune and not args.tunetype:
         parser.error(
@@ -433,21 +434,21 @@ if __name__ == "__main__":
 
     if args.cpu == 'all':
         svm_classified = image_classification(
-            raster, raster['raster_img'], cpu_num='all')
+            raster, cpu_num='all')
 
     elif args.cpu:
         svm_classified = image_classification(
-            raster, raster['raster_img'], cpu_num='number', count=args.cpu)
+            raster, cpu_num='number', count=args.cpu)
 
     elif not args.cpu:
         svm_classified = image_classification(
-            raster, raster['raster_img'], cpu_num='none')
+            raster, cpu_num='none')
 
-    model_accuracy(raster, svm_classified, training_data)
+    model_accuracy(raster, profile, svm_classified, training_data)
 
     print('writting...', '\n')
     write_raster(
-        svm_classified, raster['crs'], raster['transform'], args.outdir)
+        svm_classified, profile['crs'], profile['transform'], args.outdir)
 
     end = time.time()
     print(
