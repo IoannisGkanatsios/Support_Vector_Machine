@@ -38,6 +38,7 @@ optional arguments:
                         random method uses a sample of the values provided which makes the optimization process much faster
   --cpu CPU             Select the number of CPUs to be used during processing. if --cpu all passed as an argument then the computer uses all the CPU cores for   
                         processing. If --cpu int passed as an argument then the computer uses the number of cores specifed by the user
+  --pca                 Performs dimensionality reduction based on the PCA algorithm
 ```
 
 # Change detection
