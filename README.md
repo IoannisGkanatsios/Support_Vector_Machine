@@ -21,6 +21,8 @@ usage: SVM.py [-h]
               [-i INPUTRAW] 
               [--train TRAIN] 
               [--tune] 
+              [--cpu CPU]
+              [--pca]
 
 optional arguments:
 
