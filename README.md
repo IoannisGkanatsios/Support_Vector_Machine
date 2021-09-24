@@ -2,8 +2,8 @@
 
 This repository contains all the algorithms (SVM classifier and infrastructure change detection) used to produce the results in the paper I have co-authored with the title: 
 
-``` Fakhri,F., Gkanatsios,I 2021. Integration of Sentinel-1 and Sentinel-2 data for change detection: A case study in a war conflict area of Mosul city,  	Remote Sensing Applications: Society and Environmen, 22
-```
+`Fakhri,F., Gkanatsios,I 2021. Integration of Sentinel-1 and Sentinel-2 data for change detection: A case study in a war conflict area of Mosul city,  	Remote Sensing Applications: Society and Environmen, 22
+`
 
 
 # Run the code
