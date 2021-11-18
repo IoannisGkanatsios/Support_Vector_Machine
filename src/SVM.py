@@ -128,7 +128,7 @@ def split(raster_img, labeled_pixels, training_data, split=0.30):
         training data that has been rasterized
     split: Proportion of the data for testing. Default value is 30%.
     """
-    for i, shp in enumerate(training_data):
+    for i, shp in enumerate(sorted(training_data, reverse=True)):
         count = i + 1
         land_classes = shp.stem
         print('Class {land_classes} contains {n} pixels'.format(
